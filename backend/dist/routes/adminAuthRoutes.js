@@ -18,6 +18,7 @@ const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const authMiddleware_1 = __importDefault(require("../middleware/authMiddleware"));
 const people_1 = __importDefault(require("../models/people"));
+const express_validator_1 = require("express-validator");
 const router = express_1.default.Router();
 // creating the admin
 router.post("/register", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -49,7 +50,14 @@ router.post("/register", (req, res) => __awaiter(void 0, void 0, void 0, functio
     }
 }));
 //authentication
-router.post("/login", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.post("/login", [
+    (0, express_validator_1.check)("userName", "Username is required").isString(),
+    (0, express_validator_1.check)("password", "Password with 8 or more characters is required").isLength({ min: 8 }),
+], (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const errors = (0, express_validator_1.validationResult)(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ message: errors.array() });
+    }
     const { username, password } = req.body;
     try {
         const admin = yield admin_1.default.findOne({ username });
@@ -86,7 +94,7 @@ router.get("/validate-token", authMiddleware_1.default, (req, res) => __awaiter(
                 .json({ message: "User ID not found in request" });
         }
         // 2.Fetch the user from the database
-        const user = yield admin_1.default.findById(userId).select('-password');
+        const user = yield admin_1.default.findById(userId).select("-password");
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
@@ -110,7 +118,7 @@ router.get("/:id", authMiddleware_1.default, (req, res) => __awaiter(void 0, voi
     const id = req.params.id.toString();
     try {
         const people = yield people_1.default.find({
-            _id: id
+            _id: id,
         });
         res.json(people);
     }

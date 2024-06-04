@@ -2,6 +2,7 @@ import express, { Request, Response } from "express";
 import multer from "multer";
 import cloudinary from "cloudinary";
 import People, { PeopleType } from "../models/people";
+import { body, validationResult } from "express-validator";
 
 const router = express.Router();
 
@@ -15,8 +16,25 @@ const upload = multer({
 
 router.post(
   "/",
-  upload.array("imageFiles", 6),
+  [body("firstName").notEmpty().withMessage("first name is required"),
+  body("lastName").notEmpty().withMessage("last name is required"),
+  body("religion").notEmpty().withMessage("religion is required"),
+  body("email").notEmpty().withMessage("Email is required"),
+  body("DOB").notEmpty().withMessage("Date of Birth is required"),
+  body("age").notEmpty().isNumeric().withMessage("Age is required"),
+  body("telephone").notEmpty().withMessage("Telephone is required"),
+  body("nationality").notEmpty().withMessage("Nationality is required"),
+  body("occupation").notEmpty().withMessage("Occupation is required"),
+  body("gender").notEmpty().withMessage("Gender is required"),
+  body("firstName").notEmpty().withMessage("first name is required")
+  ],
+  upload.array("imageFiles", 1),
   async (req: Request, res: Response) => {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ message: errors.array() });
+    }
     try {
       const existingPeople = await People.findOne({ email: req.body.email });
 
@@ -54,6 +72,5 @@ router.get("/", async (req: Request, res: Response) => {
     res.status(500).json({ message: "error" });
   }
 });
-
 
 export default router;

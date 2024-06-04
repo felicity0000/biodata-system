@@ -3,7 +3,8 @@ import Admin from "../models/admin";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import verifyToken from "../middleware/authMiddleware";
-import People, {PeopleType} from "../models/people"
+import People, { PeopleType } from "../models/people";
+import { check, validationResult } from "express-validator";
 
 const router = express.Router();
 
@@ -43,41 +44,53 @@ router.post("/register", async (req: Request, res: Response) => {
   }
 });
 
-
 //authentication
-router.post("/login", async (req: Request, res: Response) => {
-  const { username, password } = req.body;
-
-  try {
-    const admin = await Admin.findOne({ username });
-    if (!admin) {
-      return res.status(400).json({ message: "Invalid Credentials" });
+router.post(
+  "/login",
+  [
+    check("userName", "Username is required").isString(),
+    check(
+      "password",
+      "Password with 8 or more characters is required"
+    ).isLength({ min: 8 }),
+  ],
+  async (req: Request, res: Response) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ message: errors.array() });
     }
+    const { username, password } = req.body;
 
-    const isMatch = await bcrypt.compare(password, admin.password);
-    if (!isMatch) {
-      return res.status(400).json({ message: "Invalid Credentials" });
-    }
-
-    const token = jwt.sign(
-      { userId: admin.id },
-      process.env.JWT_SECRET_KEY as string,
-      {
-        expiresIn: "1d",
+    try {
+      const admin = await Admin.findOne({ username });
+      if (!admin) {
+        return res.status(400).json({ message: "Invalid Credentials" });
       }
-    );
-    res.cookie("auth_token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      maxAge: 86400000,
-    });
-    res.status(200).json({ adminId: admin._id });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: "Something went wrong" });
-  }
-});
 
+      const isMatch = await bcrypt.compare(password, admin.password);
+      if (!isMatch) {
+        return res.status(400).json({ message: "Invalid Credentials" });
+      }
+
+      const token = jwt.sign(
+        { userId: admin.id },
+        process.env.JWT_SECRET_KEY as string,
+        {
+          expiresIn: "1d",
+        }
+      );
+      res.cookie("auth_token", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 86400000,
+      });
+      res.status(200).json({ adminId: admin._id });
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ message: "Something went wrong" });
+    }
+  }
+);
 
 // get admin
 router.get(
@@ -93,7 +106,7 @@ router.get(
           .json({ message: "User ID not found in request" });
       }
       // 2.Fetch the user from the database
-      const user = await Admin.findById(userId).select('-password');
+      const user = await Admin.findById(userId).select("-password");
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
@@ -109,22 +122,22 @@ router.get(
 );
 
 // admin logout
-router.post("/logout", (req: Request, res: Response)=>{
+router.post("/logout", (req: Request, res: Response) => {
   res.cookie("auth_token", "", {
     expires: new Date(0),
   });
   res.send();
 });
 
-router.get("/:id", verifyToken, async(req:Request, res:Response)=>{
+router.get("/:id", verifyToken, async (req: Request, res: Response) => {
   const id = req.params.id.toString();
   try {
     const people = await People.find({
-      _id: id
+      _id: id,
     });
-    res.json(people)
-  }catch(error) {
-    res.status(500).json({message:"Error fetching people"})
+    res.json(people);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching people" });
   }
 });
 export default router;

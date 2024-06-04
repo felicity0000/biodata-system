@@ -1,8 +1,10 @@
 import { Link } from "react-router-dom";
 import { Button } from "./ui/button";
 import { useAppContext } from "@/contexts/AppContext";
-import { Badge } from "@/components/ui/badge"
+import { Badge } from "@/components/ui/badge";
 import SignOutButton from "./SignOutButton";
+import MobileNav from "./MobileNav";
+import { CircleUserRound } from "lucide-react";
 
 const Header = () => {
   const { isLoggedIn, userName } = useAppContext();
@@ -15,19 +17,28 @@ const Header = () => {
         <span className="flex space-x-4">
           {isLoggedIn ? (
             <>
-            <Badge>{userName}</Badge>
-            <SignOutButton/>
+              <Badge className="hidden md:relative flex  flex-row item-center"><CircleUserRound/>{userName}</Badge>
+              <div className="hidden md:block">
+                <SignOutButton />
+              </div>
+
+              <div className="md:hidden">
+                <MobileNav />
+              </div>
             </>
           ) : (
             <>
-              <Button>
+              <Button className="hidden md:block">
                 <Link
                   to="/sign-in"
-                  className="font-poppins flex items-center text-white px-3 font-bold"
+                  className="font-poppins flex items-center text-white px-3 font-bold "
                 >
                   Sign In
                 </Link>
               </Button>
+              <div className="md:hidden">
+                <MobileNav />
+              </div>
             </>
           )}
         </span>

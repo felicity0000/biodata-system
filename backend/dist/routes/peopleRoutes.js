@@ -16,6 +16,7 @@ const express_1 = __importDefault(require("express"));
 const multer_1 = __importDefault(require("multer"));
 const cloudinary_1 = __importDefault(require("cloudinary"));
 const people_1 = __importDefault(require("../models/people"));
+const express_validator_1 = require("express-validator");
 const router = express_1.default.Router();
 const storage = multer_1.default.memoryStorage();
 const upload = (0, multer_1.default)({
@@ -24,7 +25,22 @@ const upload = (0, multer_1.default)({
         fileSize: 5 * 1024 * 1024, // 5 MB
     },
 });
-router.post("/", upload.array("imageFiles", 6), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.post("/", [(0, express_validator_1.body)("firstName").notEmpty().withMessage("first name is required"),
+    (0, express_validator_1.body)("lastName").notEmpty().withMessage("last name is required"),
+    (0, express_validator_1.body)("religion").notEmpty().withMessage("religion is required"),
+    (0, express_validator_1.body)("email").notEmpty().withMessage("Email is required"),
+    (0, express_validator_1.body)("DOB").notEmpty().withMessage("Date of Birth is required"),
+    (0, express_validator_1.body)("age").notEmpty().isNumeric().withMessage("Age is required"),
+    (0, express_validator_1.body)("telephone").notEmpty().withMessage("Telephone is required"),
+    (0, express_validator_1.body)("nationality").notEmpty().withMessage("Nationality is required"),
+    (0, express_validator_1.body)("occupation").notEmpty().withMessage("Occupation is required"),
+    (0, express_validator_1.body)("gender").notEmpty().withMessage("Gender is required"),
+    (0, express_validator_1.body)("firstName").notEmpty().withMessage("first name is required")
+], upload.array("imageFiles", 1), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const errors = (0, express_validator_1.validationResult)(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ message: errors.array() });
+    }
     try {
         const existingPeople = yield people_1.default.findOne({ email: req.body.email });
         if (existingPeople) {
