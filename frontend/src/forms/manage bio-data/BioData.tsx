@@ -21,9 +21,11 @@ type Props = {
   onSave: (BiodataFormData: FormData) => void;
   isLoading: boolean;
 };
-const BioData = ({ onSave, isLoading }: Props) => {
+const BioData = ({ onSave, isLoading}: Props) => {
   const formMethods = useForm<BiodataFormData>();
-  const { handleSubmit } = formMethods;
+  const { handleSubmit} = formMethods;
+
+
 
   const onSubmit = handleSubmit((formDataJSON: BiodataFormData) => {
     //create new FormData object and call our API
@@ -54,8 +56,12 @@ const BioData = ({ onSave, isLoading }: Props) => {
             <ImagesSection />
           </div>
           <span className="py-4 flex justify-end">
-            <Button disabled={isLoading} type="submit" className="disabled:bg-gray-500">
-              {isLoading? "saving...": "save"}
+            <Button
+              disabled={isLoading}
+              type="submit"
+              className="disabled:bg-gray-500"
+            >
+              {isLoading ? "saving..." : "save"}
             </Button>
           </span>
         </div>

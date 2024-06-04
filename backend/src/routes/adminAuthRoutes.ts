@@ -3,6 +3,7 @@ import Admin from "../models/admin";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import verifyToken from "../middleware/authMiddleware";
+import People, {PeopleType} from "../models/people"
 
 const router = express.Router();
 
@@ -115,4 +116,15 @@ router.post("/logout", (req: Request, res: Response)=>{
   res.send();
 });
 
+router.get("/:id", verifyToken, async(req:Request, res:Response)=>{
+  const id = req.params.id.toString();
+  try {
+    const people = await People.find({
+      _id: id
+    });
+    res.json(people)
+  }catch(error) {
+    res.status(500).json({message:"Error fetching people"})
+  }
+});
 export default router;

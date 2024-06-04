@@ -17,6 +17,7 @@ const admin_1 = __importDefault(require("../models/admin"));
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const authMiddleware_1 = __importDefault(require("../middleware/authMiddleware"));
+const people_1 = __importDefault(require("../models/people"));
 const router = express_1.default.Router();
 // creating the admin
 router.post("/register", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -105,4 +106,16 @@ router.post("/logout", (req, res) => {
     });
     res.send();
 });
+router.get("/:id", authMiddleware_1.default, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const id = req.params.id.toString();
+    try {
+        const people = yield people_1.default.find({
+            _id: id
+        });
+        res.json(people);
+    }
+    catch (error) {
+        res.status(500).json({ message: "Error fetching people" });
+    }
+}));
 exports.default = router;

@@ -66,3 +66,15 @@ export const signOut = async () => {
         throw new Error("Error during sign out");
     }
 }
+
+export const fetchPeopleById = async (peopleId: string) => {
+    const response = await fetch(`${API_BASE_URL}/api/admin/${peopleId}`,{
+        credentials: "include"
+    });
+
+    if(!response.ok) {
+        throw new Error("Error fetching People")
+    }
+
+    return response.json();
+}
